@@ -6,10 +6,6 @@ import { Dropdown } from 'react-bootstrap';
 import {
   getListItems,
   getLikeTasks,
-  findOrCreateTask,
-  removeTask,
-  toggleComplete,
-  updateTask
 } from "../services/bucketListService";
 import { DropDown, DropDownItem, SearchStyles } from "../components/styles/DropDown";
 import {createPublicGroupChat, removeFromChat } from '../services/messageService';
@@ -17,13 +13,20 @@ import _ from "lodash";
 
 import { connect } from 'react-redux';
 import { selectCurrentUser, selectUserToken } from '../store/user/user.selectors';
+import { selectBucketList } from '../store/bucket-list/bucket-list.selectors';
+import { 
+  fetchBucketListAsync, 
+  updateListItemStatusAsync,
+  removeBucketListItemAsync,
+  addBucketListItemAsync,
+  updateListItemsAsync
+} from '../store/bucket-list/bucket-list.actions';
 
 // max length for taskName is 60 char
 class BucketList extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      listItems: [], // User's bucket list items
       newTaskInput: '', // "Add New Task" form
       searchResults: [], // for autocomplete search NOT BucketList search
       loading: "",
@@ -40,13 +43,9 @@ class BucketList extends Component {
   }
 
   async componentDidMount() {
-    const { currentUser: user, token: jwt } = this.props;
+    const { currentUser: user, token: jwt, fetchBucketListAsync } = this.props;
 
-    // need to pass request headers
-    const response = await getListItems(user, jwt);
-    const listItems = response.data[0].listItems;
-    //const paginatedItems = listItems
-    this.setState({ listItems: listItems });
+    fetchBucketListAsync(user, jwt);
   }
 
   paginateData = (items, pageNumber, pageSize) => {
@@ -63,45 +62,50 @@ class BucketList extends Component {
     const minTaskNameLength = 5;
     const maxTaskNameLength = 50;
     const newTaskName = document.getElementById("new_task").value;
+
+    let errorMessage = '';
     if (newTaskName.length === 0) {
-      this.setState({ inputError: "Must add a task first" });
-      return;
+      errorMessage = "Must add a task first";
     } else if (newTaskName.length < minTaskNameLength) {
-      this.setState({ inputError: `Task must be more than ${minTaskNameLength} letters` });
-      return;
+      errorMessage = `Task must be more than ${minTaskNameLength} letters`;
     } else if (newTaskName.length > maxTaskNameLength) {
-      this.setState({ inputError: `Task must be less than ${maxTaskNameLength} letters` });
+      errorMessage = `Task must be less than ${maxTaskNameLength} letters`;
+    }
+
+    if (errorMessage) {
+      this.setState({ inputError: errorMessage });
       return;
     }
 
-    try {
-      const { currentUser: user, token: jwt } = this.props;
+    const { currentUser: user, token: jwt, addBucketListItemAsync } = this.props;
+    addBucketListItemAsync(user, newTaskName, jwt);
+    createPublicGroupChat(user._id , newTaskName);
 
-      // create a new list item
-      const response = findOrCreateTask(user, newTaskName, jwt);
+    this.setState({ newTaskInput: '' });
 
+    // try {
+    //   const { currentUser: user, token: jwt } = this.props;
 
-      // create a new message group for that task
+    //   // create a new list item
+    //   const response = findOrCreateTask(user, newTaskName, jwt);
 
-      createPublicGroupChat( user._id , newTaskName);// make new group chat
+    //   // create a new message group for that task
+    //   createPublicGroupChat( user._id , newTaskName);// make new group chat
 
-
-      response.then(result => {
-        const listItems = result.data;
-        console.log(listItems);
-        var newlist = this.listsort(listItems,this.state.filter);
-        console.log(newlist);
-        this.setState({listItems: newlist });
-      });
-      this.setState({newTaskInput: ''}); // resets form value
-    } catch (ex) {
-      alert("Unable to add item.");
-      //this.setState({ listItems: originalList });
-    }
+    //   response.then(result => {
+    //     const listItems = result.data;
+    //     var newlist = this.listsort(listItems,this.state.filter);
+    //     this.setState({listItems: newlist });
+    //   });
+    //   this.setState({newTaskInput: ''}); // resets form value
+    // } catch (ex) {
+    //   alert("Unable to add item.");
+    //   //this.setState({ listItems: originalList });
+    // }
   };
 
   listsort = (list,value) =>{
-    console.log(list);
+    console.log("listsort!!!");
     switch(value) {
       case 0: // Alphabetical sort (ascending)
         list.sort(function (a, b) {
@@ -110,7 +114,6 @@ class BucketList extends Component {
 
                     return textA.localeCompare(textB);
                   });
-        //this.setState({listItems: sortedArray});
         return list;
       case 1: // Alphabetical sort (descending)
         list.sort(function (a, b) {
@@ -119,16 +122,14 @@ class BucketList extends Component {
 
                     return textB.localeCompare(textA);
                   });
-        //this.setState({listItems: sortedArray});
         return list;
-        case 3:
+        case 3: // sorted by datta added
             list.sort(function (a, b) {
               var textA = a.dateAdded;
               var textB = b.dateAdded;
 
               return textB.localeCompare(textA);
             });
-            //this.setState({listItems: sortedArray});
             return list;
       default:
         console.log("Sorting: invalid");
@@ -137,63 +138,41 @@ class BucketList extends Component {
   }
 
   handleUpdate = (item, newText) => {
-    const { currentUser: user, token: jwt } = this.props;
+    const { currentUser: user, token: jwt, updateListItemsAsync } = this.props;
 
-    const response = updateTask(user, item, newText, jwt);
+    updateListItemsAsync(user, item, newText, jwt);
 
-    removeFromChat(item.taskName, user._id);// remove user from group chat
-    createPublicGroupChat( user._id , newText);// make new group chat
-
-    response.then(result => {
-      const updatedList = result.data;
-      this.setState({ listItems: updatedList });
-    });
+    removeFromChat(item.taskName, user._id);
+    createPublicGroupChat( user._id , newText);
   };
 
   handleDelete = async item => {
-    const originalList = this.state.listItems;
-    const modifiedList = [...this.state.listItems];
-    const index = modifiedList.indexOf(item);
-    modifiedList.splice(index, 1);
-    this.setState({ listItems: modifiedList });
+    const { currentUser, token, removeBucketListItemAsync } = this.props;
+    removeBucketListItemAsync(currentUser, item, token);
 
     try {
-      const { currentUser: user, token: jwt } = this.props;
-
-      await removeTask(user, item, jwt);
-
-      removeFromChat(item.taskName, user._id);// remove user from group chat
-
+      removeFromChat(item.taskName, currentUser._id);
     } catch (ex) {
-      alert('Unable to delete item.');
-      this.setState({ listItems: originalList });
+      console.log(`Cannot remove user from group chat: ${item.taskName}`);
     }
   };
 
-  handleCompleted = async item => {
-    const originalList = this.state.listItems;
-    const modifiedList = [...this.state.listItems];
-    const index = modifiedList.indexOf(item);
-    modifiedList[index].isCompleted = !modifiedList[index].isCompleted;
-    this.setState({ listItems: modifiedList });
+  handleCompleted = item => {
+    const { 
+      currentUser,
+      token,
+      updateListItemStatusAsync 
+    } = this.props;
 
-    try {
-      const { currentUser: user, token: jwt } = this.props;
-
-      await toggleComplete(user, item, jwt);
-    } catch (ex) {
-      this.setState({ listItems: originalList });
-    }
+    updateListItemStatusAsync(currentUser, item, token);
   };
 
   confirmDelete = item => {
     const answer = window.confirm(
       `Are you sure you want to delete task, "${item.taskName}?"`
     );
-    if (answer) {
-      return true;
-    }
-    return false;
+
+    return (answer) ? true : false;
   };
 
   // onChange function for Add New Task input
@@ -226,9 +205,10 @@ class BucketList extends Component {
   }
 
   async filterSort(value) {
-    this.state.filter = value;
-    var sortedArray = this.state.listItems;
-    switch(value) {
+    console.log("filterSort!!!");
+    this.setState({ filter: value });
+    let sortedArray = this.props.listItems;
+    switch (value) {
       case 0: // Alphabetical sort (ascending)
         sortedArray.sort(function (a, b) {
                     var textA = a.taskName.toUpperCase();
@@ -236,7 +216,6 @@ class BucketList extends Component {
 
                     return textA.localeCompare(textB);
                   });
-        this.setState({listItems: sortedArray});
         return;
       case 1: // Alphabetical sort (descending)
         sortedArray.sort(function (a, b) {
@@ -245,16 +224,12 @@ class BucketList extends Component {
 
                     return textB.localeCompare(textA);
                   });
-        this.setState({listItems: sortedArray});
         return;
       case 2:
         // get bucket list items
         const { currentUser: user, token: jwt } = this.props;
 
         // need to pass request headers
-        const response = await getListItems(user, jwt);
-        const listItems = response.data[0].listItems;
-        this.setState({ listItems: listItems });
         return;
         case 3:
             this.state.selectedFilter = 'Newest';
@@ -264,7 +239,6 @@ class BucketList extends Component {
 
               return textB.localeCompare(textA);
             });
-            this.setState({listItems: sortedArray});
             return;
       default:
         console.log("Sorting: invalid");
@@ -279,9 +253,8 @@ class BucketList extends Component {
       return;
   }
 
-
-
   taskItemRenderTypeFilter(item) {
+    console.log("taskItemRenderTypeFilter!!");
     try {
       // Filter by type will be determined by this switch statement
       switch(this.state.listItemsRenderType) {
@@ -313,8 +286,6 @@ class BucketList extends Component {
   displayItems = (items, listFilterSearch, filterType, currentPage, pageSize) => {
     // loop through the items and filter
     let filteredItems = [];
-
-    console.log("listFilterSearch", listFilterSearch);
 
     if (listFilterSearch) {
       // Regex
@@ -365,13 +336,12 @@ class BucketList extends Component {
 
 
   render() {
-    const { currentUser: user } = this.props;
+    const { currentUser: user, listItems } = this.props;
     const {
       inputError,
       filter,
       listItemsRenderType,
       listFilterSearch,
-      listItems,
       currentPage,
       pageSize
     } = this.state;
@@ -466,7 +436,7 @@ class BucketList extends Component {
             <div className="bucket-list-count col-md-12">
               <p>
                 {`There are currently ${
-                  this.state.listItems.length
+                  listItems.length
                 } items in your bucket list`}
               </p>
             </div>
@@ -542,27 +512,12 @@ class BucketList extends Component {
                 this.displayItems(listItems, listFilterSearch, listItemsRenderType, currentPage, pageSize)
               }
 
-              {/*
-              <SearchResults
-                value={this.state.listFilterSearch}
-                data={paginatedData}
-                renderResults={results => (
-                  <div className="col-md-12 nopadding">
-                    {results.length > 0 &&
-                      results.map(item => (
-                        this.taskItemRenderTypeFilter(item)
-                      ))}
-                    {results.length < 1 &&
-                      <p>Sorry, nothing was found. Try a different search term.</p>
-                    }
-                  </div>
-                )}
-              />
-              */}
+              
+             
           </ul>
           <div>
             <Pagination
-              itemsCount={this.state.listItems.length}
+              itemsCount={listItems.length}
               pageSize={this.state.pageSize}
               currentPage={this.state.currentPage}
               onPageChange={this.handlePageChange}
@@ -576,7 +531,16 @@ class BucketList extends Component {
 
 const mapStateToProps = state => ({
   currentUser: selectCurrentUser(state),
-  token: selectUserToken(state)
+  token: selectUserToken(state),
+  listItems: selectBucketList(state)
 });
 
-export default connect(mapStateToProps)(BucketList);
+const mapDispatchToProps = dispatch => ({
+  fetchBucketListAsync: (user, token) => dispatch(fetchBucketListAsync(user, token)),
+  updateListItemStatusAsync: (user, item, token) => dispatch(updateListItemStatusAsync(user, item, token)),
+  removeBucketListItemAsync: (user, item, token) => dispatch(removeBucketListItemAsync(user, item, token)),
+  addBucketListItemAsync: (user, item, token) => dispatch(addBucketListItemAsync(user, item, token)),
+  updateListItemsAsync: (user, item, newTask, token) => dispatch(updateListItemsAsync(user, item, newTask, token))
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(BucketList);
