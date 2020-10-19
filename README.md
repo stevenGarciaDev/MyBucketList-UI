@@ -1,79 +1,38 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# MyBucketList Project 
 
-This project is the Front End for the Cloud Computing Senior Project class at Cal State University of Long Beach.
+MyBucketList is a social network app that enables people to create a bucket list and connect to other people who have similar tasks on their bucket list. 
 
-The live project can be found here: [https://phuket-list.herokuapp.com/].
+The way it works is that users will first create an account.
 
-The repo for the API of the site can be found here: [https://github.com/stevenGarciaDev/phuket-list-api].
+Then they will add items to their bucket list.
 
-Clone the project and install the dependencies with npm.
+Each item will enable them to view a Group to connect with other people who share that same item on their bucket list.
 
-### `npm install`
+Other features the app provides enables the ability to add friends, view your friend's bucket list for inspiration, view an activity feed, and send messages to people you are connected with.
 
+## Technology used
 
-## Available Scripts
+The client is built using React and Redux.
 
-In the project directory, you can run:
+The API is built using the Node.js runtime environment and utilizes Express.js, Mongoose, and MongoDB.
 
-### `npm start`
+## History of Project 
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+This project was originally created as an undergraduate 
+Senior Project at Cal State Long Beach.
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+The team consisted of 4 members, including myself (Steven), to create the initial React and Node.js API. 
 
-### `npm test`
+However as the app grew, the common React problems of prop drilling occurred.
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Therefore, I have updated the app to utilize Redux for state management. 
 
-### `npm run build`
+I am currently in progress to update the app to have its state fully utilize the Redux store 
+as well as implement unit testing to improve the code coverage for the application.
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+To view the previous version of the app, before the Redux implementation, you can view 
+the links below.
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+[React Client for BucketList project](https://github.com/stevenGarciaDev/phuket-list-client)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+[Node.js API for BucketList project](https://github.com/stevenGarciaDev/phuket-list-api)

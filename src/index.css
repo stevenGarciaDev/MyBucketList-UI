@@ -1305,6 +1305,14 @@ Task Group page
   border: 1px solid #e9ebee;
 }
 
+/* ----------------------
+Options toolbar
+------------------- */
+
+.delete-task-popup {
+  padding-top: 20px;
+}
+
 /* ----------
  MISC
 ---------- */

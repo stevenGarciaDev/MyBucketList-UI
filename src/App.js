@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import { Route, Switch, Redirect } from 'react-router-dom';
-import HomePage from './components/HomePage';
+import HomePage from './pages/HomePage';
 import BucketList from './pages/BucketList';
 import TaskGroup from './pages/TaskGroup';
 import FlexNavbar from './components/FlexNavbar';
@@ -28,7 +28,6 @@ class App extends Component {
   componentDidMount() {
     const jwt = localStorage.getItem('token');
     this.props.setUserToken(jwt);
-    console.log("user token set", jwt);
   }
 
   render() {

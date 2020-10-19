@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { getUser, uploadNewProfileImage, updateProfileImage, updateProfile } from "../services/userService";
-import { getListItems } from "../services/bucketListService";
 import ImageInput from "../components/common/imageInput";
-
 import { connect } from 'react-redux';
 import { selectUserToken, selectCurrentUser } from '../store/user/user.selectors';
+import { fetchBucketListAsync } from '../store/bucket-list/bucket-list.actions';
+import { selectBucketList } from '../store/bucket-list/bucket-list.selectors';
 
 class Profile extends Component {
 
@@ -17,18 +17,22 @@ class Profile extends Component {
       user: {},
       isEditing: false,
       bio: "",
-      listItems: []
     }
   }
 
   async componentDidMount() {
-    const { currentUser, token } = this.props;
+    const { currentUser, token, fetchBucketListAsync } = this.props;
 
     const user = await getUser(currentUser._id);
-    const response = await getListItems(currentUser, token);
-    const listItems = response.data[0].listItems;
+    fetchBucketListAsync(currentUser, token);
 
-    this.setState({ user: user.data, imageToDisplay: user.data.photo, bio: user.data.bio, listItems: listItems });
+    console.log("@user", user);
+
+    this.setState({ 
+      user: user.data, 
+      imageToDisplay: user.data.photo, 
+      bio: user.data.bio
+    });
   }
 
   toggleEdit = () => {
@@ -123,7 +127,8 @@ class Profile extends Component {
   }
 
   render() {
-    const { listItems, imageToDisplay, imageToUpload } = this.state;
+    const { listItems } = this.props;
+    const { imageToDisplay, imageToUpload } = this.state;
 
     return (
       <div className="container">
@@ -191,7 +196,12 @@ class Profile extends Component {
 
 const mapStateToProps = state => ({
   currentUser: selectCurrentUser(state),
-  token: selectUserToken(state)
+  token: selectUserToken(state),
+  listItems: selectBucketList(state)
 });
 
-export default connect(mapStateToProps)(Profile);
+const mapDispatchToProps = dispatch => ({
+  fetchBucketListAsync: (user, token) => dispatch(fetchBucketListAsync(user, token))
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Profile);
