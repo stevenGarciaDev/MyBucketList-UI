@@ -31,7 +31,7 @@ class FlexNavbar extends Component {
                 console.log("Location:", response.coords);
             });
         } catch (ex) {
-            console.log("error ", ex)
+            console.log("Cannot get Yelp recommendations because user's location is not permitted.");
         }
     }
 
