@@ -28,12 +28,12 @@ class OptionsToolbar extends Component {
                aria-hidden="true"
                onClick={ (e) => {
                  e.preventDefault();
-                 console.log(`Value is ${item.taskName}`);
+  
                  this.props.onUpdate(
                    this.props.item,
                    document.getElementById(`${item.taskName}`).value
                  );
-                 console.log(document.getElementById(`${item.taskName}`).value);
+          
                  this.props.onEdit();
                }}></i>
           </div>
@@ -74,13 +74,20 @@ class OptionsToolbar extends Component {
              onClick={() => this.onOpenModal()}></i>
         </div>
         <Modal open={this.state.open} onClose={this.onCloseModal}>
-          <h2>Confirm Delete Task</h2>
-          <p>Are you sure you wanna delete task?</p>
-          <Form onSubmit={this.handleSubmit}>
-          <Button className="d-flex justify-content-start" variant="warning" type="submit" onClick={() => this.props.onDelete(item )}>
-                Confirm
-              </Button>
-          </Form>
+          <div className="delete-task-popup">
+            <h2>Confirm Delete Task</h2>
+            <p>Are you sure you wanna delete task?</p>
+            <Button 
+              className="d-flex justify-content-start" 
+              variant="warning" 
+              type="submit" 
+              onClick={() => {
+                this.props.onDelete(item);
+                this.onCloseModal();
+              }}>
+              Confirm
+            </Button>
+          </div>
         </Modal>
       </React.Fragment>
     );
