@@ -6,7 +6,7 @@ const HomePage = () => {
 		<React.Fragment>
 			<div className="home-container">
 				<div className="home-title-container">
-					<h1 className="home-title">Phuket List</h1>
+					<h1 className="home-title">My Bucket List</h1>
 					<p className="home-subtitle">A social network that connects people to check off items on their bucket list.</p>
 				</div>
 
