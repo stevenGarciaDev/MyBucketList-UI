@@ -1,14 +1,16 @@
 import http from './httpService';
 
-//const apiEndpoint = apiUrl + "/bucketList";
-//const apiEndpointListItems = apiUrl + "/ListItem";
-
 const apiEndpoint = "/bucketList";
 const apiEndpointListItems = "/ListItem";
 
 export async function getListItems(user, jwt) {
-  const response = await http.get(`${apiEndpoint}/${user._id}`,
-     { 'headers': {'x-auth-token': jwt } });
+  let response = [];
+  try {
+     response = await http.get(`${apiEndpoint}/${user._id}`,
+      { 'headers': {'x-auth-token': jwt } });
+  } catch (err) {
+    console.log("unable to retrieve list item response", err);
+  }
   return response;
 }
 

@@ -437,7 +437,7 @@ class BucketList extends Component {
               <p>
                 {`There are currently ${
                   listItems.length
-                } items in your bucket list`}
+                } items in your bucket list.`}
               </p>
             </div>
           </div>
