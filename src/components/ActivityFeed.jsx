@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { getPosts } from '../services/postService';
+import { getPosts, remove } from '../services/postService';
 import Post from './post';
 import PostForm from './postForm';
 
@@ -27,6 +27,20 @@ class ActivityFeed extends Component {
     this.setState({ posts });
   }
 
+  handleDelete = async (post_id) => {
+    let updatedPosts = [];
+    const { posts } = this.state;
+    
+    try {
+      remove(post_id);
+      updatedPosts = posts.filter(p => p._id !== post_id);
+    } catch (err) {
+      updatedPosts = posts;
+    }
+
+    this.setState({ posts: updatedPosts });
+  }
+
   render() {
     const { posts } = this.state;
     const { taskId } = this.props;
@@ -47,6 +61,7 @@ class ActivityFeed extends Component {
               text={post.text}
               likes={post.likes}
               comments={post.comments}
+              onDelete={this.handleDelete}
             />
           ))}
         </div>

@@ -9,14 +9,15 @@ import {
 	getTaskUsersLazy,
 	getRecentTaskUsers
 } from "../services/bucketListService";
-import {
-	getUserBasic } from "../services/userService";
+import { getUserBasic } from "../services/userService";
 import { getRelatedBusinesses } from '../services/yelpService';
 import { getCurrentLocation } from '../services/locationService';
 import { getRecommendations } from '../services/recommendationService';
 
 import { connect } from 'react-redux';
 import { selectCurrentUser, selectUserToken } from '../store/user/user.selectors';
+import { selectBucketList } from '../store/bucket-list/bucket-list.selectors';
+import { fetchBucketListAsync } from '../store/bucket-list/bucket-list.actions';
 
 class TaskGroup extends Component {
 
@@ -25,7 +26,6 @@ class TaskGroup extends Component {
 	    this.state = {
 	      task_id: this.props.match.params.task_id,
 	      task_name: '',
-	      user_hastask: false,
 	      message: '',
 	      members: [],
 	      loadedMembers: [],
@@ -38,19 +38,21 @@ class TaskGroup extends Component {
 
 	async componentDidMount() {
 		// User authentication
-		const { currentUser: user, token: jwt } = this.props;
+		const { 
+			currentUser: user, 
+			token: jwt, 
+			listItems, 
+			fetchBucketListAsync 
+		} = this.props;
 
-		// Get task name
-		const response = await getListItem(this.state.task_id);
-    	this.setState({task_name: response.data.taskName});
+		console.log("user", user);
+		console.log("jwt", jwt);
 
-		// Find if user has task
-		const tasksresponse = await getListItems(user, jwt);
-		const listItems = tasksresponse.data[0].listItems;
-
-		if (this.contains(listItems, "_id", this.state.task_id) ) {
-			this.setState({user_hastask: true});
-		}
+		fetchBucketListAsync(user, jwt);
+		
+		const task = listItems.find(item => item._id === this.props.match.params.task_id);
+		const task_name = task ? task.taskName : '';
+    	this.setState({ task_name });
 
 		// Call function to retrieve latest members
 		let members = await this.getRecentMembers();
@@ -174,46 +176,39 @@ class TaskGroup extends Component {
 	  				</div>
           	<div className="task-group-members col-lg-3">
           		<div className="sticky">
-
           			<div  className="side-section-nav">
+						<div name = "membersIconTitle">Recently Joined Members</div>
 
-
-									  <div name = "membersIconTitle">Recently Joined Members</div>
-
-
-
-
-
-									<div name = "membersIconBody" className="task-group-members-list">
-											{members.length > 0 && members.map ( item =>
-												<UserItem
-													key={item._id}
-													user={item}
+							<div name = "membersIconBody" className="task-group-members-list">
+									{members.length > 0 && members.map ( item =>
+										<UserItem
+											key={item._id}
+											user={item}
+										/>
+									)}
+								<button className="mx-auto d-block btn btn-light" onClick={this.toggleMembersModal}>View All</button>
+							</div>
+						</div>
+						<section className="recommendations-container">
+							<div className="sticky">
+								<div className="side-section-nav">
+									<h3 className="recommendation-title">Recommendations</h3>
+									<div>
+										{ recommendations.length > 0 ?
+											recommendations.map(r => (
+												<RecommendationItem
+													name={r.name}
+													location={r.location.address1}
 												/>
-											)}
-										<button className="mx-auto d-block btn btn-light" onClick={this.toggleMembersModal}>View All</button>
+											))
+											:
+											<div>No recommendations</div>
+										}
 									</div>
 								</div>
-								<section className="recommendations-container">
-									<div className="sticky">
-										<div className="side-section-nav">
-											<h3 className="recommendation-title">Recommendations</h3>
-											<div>
-												{ recommendations.length > 0 ?
-													recommendations.map(r => (
-														<RecommendationItem
-															name={r.name}
-															location={r.location.address1}
-														/>
-													))
-													:
-													<div>No recommendations</div>
-												}
-											</div>
-										</div>
-									</div>
-								</section>
-							 </div>
+							</div>
+						</section>
+					</div>
       			</div>
       		</div>
       	</div>
@@ -262,7 +257,12 @@ class TaskGroup extends Component {
 
 const mapStateToProps = state => ({
 	currentUser: selectCurrentUser(state),
-	selectUserToken: selectUserToken(state)
-  });
-  
-  export default connect(mapStateToProps)(TaskGroup);
+	selectUserToken: selectUserToken(state),
+	listItems: selectBucketList(state)
+});
+
+const mapDispatchToProps = dispatch => ({
+	fetchBucketListAsync: (user, token) => dispatch(fetchBucketListAsync(user, token))
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(TaskGroup);

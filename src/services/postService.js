@@ -62,16 +62,8 @@ export async function updateLikeInfo(likesArr, taskId, jwt) {
   return response;
 }
 
-export function edit(post) {
-
-}
-
 export function remove(id) {
   return http.post(`${apiEndpoint}/delPost`,{id});
-}
-
-export function update(post) {
-
 }
 
 export async function report(taskId, jwt) {

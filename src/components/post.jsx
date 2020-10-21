@@ -20,7 +20,6 @@ class Post extends Component {
     let didPrevLike = likes.indexOf(user._id) !== -1 ? true : false;
   
     this.state = {
-      id: id,
       author: author,
       authorProfileAvatar: "",
       image: image,
@@ -36,7 +35,8 @@ class Post extends Component {
 
   async componentDidMount() {
     const jwt = localStorage.getItem("token");
-    const isAppro = await getIsAppropriate(this.state.id, jwt);
+    const { id } = this.props;
+    const isAppro = await getIsAppropriate(id, jwt);
     this.setState({isAppropriate: isAppro });
 
     // Grab user's avatar profile picture by ID, since this should be public.
@@ -80,15 +80,6 @@ class Post extends Component {
     });
   }
 
-  delPost =async () =>{
-    alert("you sure you wanna delete?");
-    const response = await remove(this.state.id);
-    console.log(response);
-    if(response){
-      window.location.reload();
-    }
-  }
-
   handleReportButton = () => {
     this.setState({
       isAppropriate: false
@@ -98,8 +89,6 @@ class Post extends Component {
 
   render() {
     const {
-      id,
-      author,
       image,
       dateCreated,
       text,
@@ -108,6 +97,7 @@ class Post extends Component {
       comments,
       displayComments
     } = this.state;
+    const { id, author } = this.props;
     const userId = this.props.currentUser._id;
     return ( (this.state.isAppropriate) ?
       <div className="post-module">
@@ -133,7 +123,7 @@ class Post extends Component {
                  </Moment>
               </small>
               {userId === author._id ?
-              <span id="grid" onClick={() => this.delPost()}> 
+              <span id="grid" onClick={() => this.props.onDelete(id)}> 
                 <i className="fa fa-times" ></i>
               </span> 
               :
@@ -166,7 +156,7 @@ class Post extends Component {
                   postId={id} />
               </div>
               <div className="col-md-12">
-                <div><ReportIcon taskId = {this.state.id} handleReport={this.handleReportButton}/></div>
+                <div><ReportIcon taskId = {id} handleReport={this.handleReportButton}/></div>
               </div>
             </div>
           </div>
