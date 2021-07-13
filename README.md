@@ -10,6 +10,8 @@ Each item will enable them to view a Group to connect with other people who shar
 
 Other features the app provides enables the ability to add friends, view your friend's bucket list for inspiration, view an activity feed, and send messages to people you are connected with.
 
+The deployed application can be viewed at the following URL, [http://bucket-list-items.herokuapp.com/](http://bucket-list-items.herokuapp.com/);
+
 ## Technology used
 
 The client is built using React and Redux.
