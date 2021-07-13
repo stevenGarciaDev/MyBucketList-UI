@@ -120,7 +120,7 @@ class LoginForm extends Form {
                 {this.renderButton("Login")}
                 <Link to="/Forgot" className="auth-sub-text">Forgot password?</Link>
               </form>
-              <hr />
+              {/* <hr />
               <h5>or</h5>
                 <GoogleLogin
                   clientId="745879377205-gjmkk5rrfnnqtehsae85n23cuuqol4d5.apps.googleusercontent.com"
@@ -134,7 +134,7 @@ class LoginForm extends Form {
                   onSuccess={this.googleSuccess}
                   onFailure={this.googleError}
                   cookiePolicy={'single_host_origin'}
-                />
+                /> */}
           </div>
       }
         
